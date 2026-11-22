@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · PS1 Web</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="library admin">
+  <header class="top">
+    <h1>Painel do admin</h1>
+    <p><a href="index.html">‹ Voltar para a biblioteca</a></p>
+  </header>
+
+  <section id="login" class="box" hidden>
+    <h2>Entrar</h2>
+    <form id="loginForm" class="form">
+      <label class="field">Usuário
+        <input id="user" type="text" autocomplete="username" required>
+      </label>
+      <label class="field">Senha
+        <input id="pass" type="password" autocomplete="current-password" required>
+      </label>
+      <button class="btn" type="submit">Entrar</button>
+      <p id="loginMsg" class="msg" role="status"></p>
+    </form>
+  </section>
+
+  <div id="panel" hidden class="stack">
+    <section class="box">
+      <div class="row-between">
+        <h2>Enviar jogo</h2>
+        <button id="logout" class="btn ghost" type="button">Sair</button>
+      </div>
+      <form id="uploadForm" class="form">
+        <label class="field">Título
+          <input id="title" type="text" maxlength="80" required>
+        </label>
+        <div class="two">
+          <label class="field">Ano
+            <input id="year" type="number" min="1990" max="2010" inputmode="numeric">
+          </label>
+          <label class="field">Gênero
+            <input id="genre" type="text" maxlength="40">
+          </label>
+        </div>
+        <label class="field">Arquivo do jogo (.chd, .pbp, .iso, .zip, .7z)
+          <input id="gameFile" type="file" accept=".chd,.pbp,.iso,.img,.bin,.zip,.7z" required>
+        </label>
+        <label class="field">Capa (opcional, até 5 MB)
+          <input id="coverFile" type="file" accept="image/*">
+        </label>
+        <button id="sendBtn" class="btn" type="submit">Enviar jogo</button>
+        <progress id="bar" max="100" value="0" hidden></progress>
+        <p id="upMsg" class="msg" role="status"></p>
+      </form>
+    </section>
+
+    <section class="box">
+      <h2>Jogos publicados</h2>
+      <ul id="list" class="list"></ul>
+      <p id="listMsg" class="msg" role="status"></p>
+    </section>
+  </div>
+</main>
+<script src="js/config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
