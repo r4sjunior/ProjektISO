@@ -92,8 +92,23 @@
     window.EJS_mouse = false;
     // Desempenho: usa várias threads quando o site está isolado (cabeçalhos COOP/COEP do vercel.json)
     window.EJS_threads = !!window.crossOriginIsolated;
-    // Pula quadros automaticamente em aparelhos lentos em vez de deixar o jogo e o som lentos
-    window.EJS_defaultOptions = { pcsx_rearmed_frameskip_type: "auto" };
+    // Aparelho "leve": celular/tablet ou máquina com poucos núcleos/memória
+    const weak =
+      matchMedia("(pointer: coarse)").matches ||
+      (navigator.hardwareConcurrency || 4) <= 4 ||
+      (navigator.deviceMemory || 8) <= 4;
+    window.EJS_defaultOptions = {
+      // Pula quadros só quando o áudio está para faltar: mantém o som contínuo
+      pcsx_rearmed_frameskip_type: "auto",
+      // Desenho da GPU em thread separada (só tem efeito com EJS_threads)
+      pcsx_rearmed_gpu_thread_rendering: "sync",
+      pcsx_rearmed_spu_interpolation: "simple",
+      pcsx_rearmed_dithering: weak ? "disabled" : "enabled",
+      // O eco (reverb) é a parte mais pesada do áudio do PS1
+      pcsx_rearmed_spu_reverb: weak ? "disabled" : "enabled",
+    };
+    // Buffer de áudio maior (o padrão do EmulatorJS é 64 ms, curto demais e causa cortes)
+    patchAudioLatency(weak ? 128 : 96);
     // O gamepad virtual (direcional, botões e gatilhos) aparece sozinho em telas de toque.
     window.EJS_VirtualGamepadSettings = undefined;
     window.EJS_onGameStart = installDpad;
@@ -103,6 +118,27 @@
     const s = document.createElement("script");
     s.src = EJS_DATA + "loader.js";
     document.body.appendChild(s);
+  }
+
+  // O EmulatorJS grava "audio_latency = 64" no retroarch.cfg. Ajusta esse valor
+  // assim que a classe EJS_GameManager é definida (antes de o jogo iniciar).
+  function patchAudioLatency(ms) {
+    const patch = (GM) => {
+      if (!GM || !GM.prototype || GM.prototype.__latencyPatched) return GM;
+      const orig = GM.prototype.getRetroArchCfg;
+      GM.prototype.getRetroArchCfg = function () {
+        return orig.call(this).replace(/audio_latency = \d+/, "audio_latency = " + ms);
+      };
+      GM.prototype.__latencyPatched = true;
+      return GM;
+    };
+    if (window.EJS_GameManager) { patch(window.EJS_GameManager); return; }
+    let value;
+    Object.defineProperty(window, "EJS_GameManager", {
+      configurable: true,
+      get: () => value,
+      set: (v) => { value = patch(v); },
+    });
   }
 
   // Direcional próprio (substitui o do EmulatorJS): maior, 8 direções, zona morta
