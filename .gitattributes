@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.chd binary
+*.bin binary
+*.iso binary
+*.img binary
+*.pbp binary
+*.zip binary
+*.7z binary
+*.jpg binary
+*.png binary

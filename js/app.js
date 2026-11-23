@@ -11,20 +11,34 @@
   }
 
   async function loadManifest() {
+    const games = [];
     try {
       const r = await fetch("games/games.json", { cache: "no-cache" });
-      if (!r.ok) throw new Error(r.status);
-      manifest = await r.json();
-    } catch (e) {
-      say("Não consegui ler games/games.json. Abra o site por um servidor (GitHub Pages ou python3 -m http.server).", true);
-      return;
+      if (r.ok) {
+        const m = await r.json();
+        manifest.bios = m.bios || null;
+        games.push(...(m.games || []));
+      }
+    } catch (e) { /* games.json é opcional */ }
+
+    const api = ((window.PS1_CONFIG || {}).API_BASE || "").replace(/\/$/, "");
+    if (api) {
+      try {
+        const r = await fetch(api + "/api/games", { cache: "no-cache" });
+        if (!r.ok) throw new Error(r.status);
+        const m = await r.json();
+        games.push(...m.games);
+      } catch (e) {
+        say("Não consegui carregar os jogos do servidor. Tente novamente em instantes.", true);
+      }
     }
+    manifest.games = games;
     render();
   }
 
   function render() {
     grid.textContent = "";
-    if (!manifest.games.length) { say("Nenhum jogo cadastrado em games/games.json."); return; }
+    if (!manifest.games.length) { say("Nenhum jogo disponível ainda."); return; }
     for (const g of manifest.games) {
       const b = document.createElement("button");
       b.className = "card"; b.type = "button";
