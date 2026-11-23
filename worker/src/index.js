@@ -18,7 +18,14 @@ function corsHeaders(request, env) {
   const origin = request.headers.get("Origin");
   const allowed = (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
   const h = { Vary: "Origin" };
-  if (origin && allowed.includes(origin)) {
+  // Aceita entradas com "*" (ex.: https://projektiso-*-r4sjuniors-projects.vercel.app)
+  const matches = (o) =>
+    allowed.some((a) =>
+      a.includes("*")
+        ? new RegExp("^" + a.split("*").map((x) => x.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+") + "$").test(o)
+        : a === o
+    );
+  if (origin && matches(origin)) {
     h["Access-Control-Allow-Origin"] = origin;
     h["Access-Control-Allow-Methods"] = "GET,HEAD,POST,PUT,DELETE,OPTIONS";
     h["Access-Control-Allow-Headers"] = "Authorization,Content-Type,Range";
