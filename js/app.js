@@ -96,12 +96,77 @@
     window.EJS_defaultOptions = { pcsx_rearmed_frameskip_type: "auto" };
     // O gamepad virtual (direcional, botões e gatilhos) aparece sozinho em telas de toque.
     window.EJS_VirtualGamepadSettings = undefined;
+    window.EJS_onGameStart = installDpad;
     const biosUrl = bios || manifest.bios;
     if (biosUrl) window.EJS_biosUrl = biosUrl;
 
     const s = document.createElement("script");
     s.src = EJS_DATA + "loader.js";
     document.body.appendChild(s);
+  }
+
+  // Direcional próprio (substitui o do EmulatorJS): maior, 8 direções, zona morta
+  // proporcional e continua funcionando se o dedo escorregar para fora.
+  const DIR = { up: 4, down: 5, left: 6, right: 7 }; // índices do RetroPad
+  function installDpad() {
+    const area = document.querySelector(".ejs_virtualGamepad_left");
+    const emu = window.EJS_emulator;
+    if (!area || !emu || area.querySelector(".pad")) return;
+
+    const pad = document.createElement("div");
+    pad.className = "pad";
+    pad.innerHTML =
+      '<span class="pad-arm up"></span><span class="pad-arm down"></span>' +
+      '<span class="pad-arm left"></span><span class="pad-arm right"></span>';
+    area.appendChild(pad);
+
+    const held = { up: 0, down: 0, left: 0, right: 0 };
+    const send = (next) => {
+      let changed = false;
+      for (const k in held) {
+        if (held[k] !== next[k]) {
+          held[k] = next[k];
+          changed = true;
+          emu.gameManager.simulateInput(0, DIR[k], next[k]);
+          pad.classList.toggle("on-" + k, !!next[k]);
+        }
+      }
+      if (changed && navigator.vibrate && (next.up || next.down || next.left || next.right)) navigator.vibrate(8);
+    };
+
+    let pointer = null;
+    const update = (e) => {
+      const r = pad.getBoundingClientRect();
+      const x = e.clientX - (r.left + r.width / 2);
+      const y = e.clientY - (r.top + r.height / 2);
+      const next = { up: 0, down: 0, left: 0, right: 0 };
+      if (Math.hypot(x, y) > r.width * 0.12) {
+        // 8 setores de 45°: 0 = direita, sentido horário
+        const s = Math.round(Math.atan2(y, x) / (Math.PI / 4));
+        const sector = (s + 8) % 8;
+        if ([7, 0, 1].includes(sector)) next.right = 1;
+        if ([1, 2, 3].includes(sector)) next.down = 1;
+        if ([3, 4, 5].includes(sector)) next.left = 1;
+        if ([5, 6, 7].includes(sector)) next.up = 1;
+      }
+      send(next);
+    };
+    const release = (e) => {
+      if (e.pointerId !== pointer) return;
+      pointer = null;
+      send({ up: 0, down: 0, left: 0, right: 0 });
+    };
+
+    pad.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      pointer = e.pointerId;
+      pad.setPointerCapture(pointer);
+      update(e);
+    });
+    pad.addEventListener("pointermove", (e) => { if (e.pointerId === pointer) update(e); });
+    pad.addEventListener("pointerup", release);
+    pad.addEventListener("pointercancel", release);
+    pad.addEventListener("lostpointercapture", release);
   }
 
   // Arquivo local
