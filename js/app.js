@@ -98,6 +98,9 @@
     // Threads só em computadores fortes: o núcleo com threads reserva 512 MB de memória
     // logo no início e derruba a página em celulares (tela branca).
     window.EJS_threads = !weak && !!window.crossOriginIsolated;
+    // Em aparelhos leves, não guarda jogos grandes no cache do navegador: a gravação
+    // mantém mais uma cópia do jogo na memória e estoura o limite em jogos de 600 MB+.
+    if (weak) window.EJS_CacheLimit = 300 * 1024 * 1024;
     window.EJS_defaultOptions = {
       // Pula quadros só quando o áudio está para faltar: mantém o som contínuo
       pcsx_rearmed_frameskip_type: "auto",
