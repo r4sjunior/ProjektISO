@@ -90,18 +90,17 @@
     window.EJS_color = "#2a5db0";
     window.EJS_language = "pt-BR";
     window.EJS_mouse = false;
-    // Desempenho: usa várias threads quando o site está isolado (cabeçalhos COOP/COEP do vercel.json)
-    window.EJS_threads = !!window.crossOriginIsolated;
     // Aparelho "leve": celular/tablet ou máquina com poucos núcleos/memória
     const weak =
       matchMedia("(pointer: coarse)").matches ||
       (navigator.hardwareConcurrency || 4) <= 4 ||
       (navigator.deviceMemory || 8) <= 4;
+    // Threads só em computadores fortes: o núcleo com threads reserva 512 MB de memória
+    // logo no início e derruba a página em celulares (tela branca).
+    window.EJS_threads = !weak && !!window.crossOriginIsolated;
     window.EJS_defaultOptions = {
       // Pula quadros só quando o áudio está para faltar: mantém o som contínuo
       pcsx_rearmed_frameskip_type: "auto",
-      // Desenho da GPU em thread separada (só tem efeito com EJS_threads)
-      pcsx_rearmed_gpu_thread_rendering: "sync",
       pcsx_rearmed_spu_interpolation: "simple",
       pcsx_rearmed_dithering: weak ? "disabled" : "enabled",
       // O eco (reverb) é a parte mais pesada do áudio do PS1
