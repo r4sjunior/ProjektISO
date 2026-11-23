@@ -8,7 +8,7 @@ bucket_name = "ps1-games"
 
 [vars]
 # Origens do seu site (sem barra no final e sem caminho). Separe por vírgula.
-ALLOWED_ORIGINS = "https://SEU-USUARIO.github.io,http://localhost:8000"
+ALLOWED_ORIGINS = "https://r4sjunior.github.io,http://localhost:8000"
 
 # Segredos NÃO ficam aqui. Defina com:
 #   npx wrangler secret put ADMIN_USER
