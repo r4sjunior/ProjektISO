@@ -124,6 +124,7 @@ function fileHeaders(o) {
   h.set("Accept-Ranges", "bytes");
   h.set("Content-Length", String(o.size));
   h.set("Cache-Control", "public, max-age=3600");
+  h.set("Cross-Origin-Resource-Policy", "cross-origin"); // necessário com COEP no site
   return h;
 }
 function resolveRange(o) {

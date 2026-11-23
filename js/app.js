@@ -90,6 +90,10 @@
     window.EJS_color = "#2a5db0";
     window.EJS_language = "pt-BR";
     window.EJS_mouse = false;
+    // Desempenho: usa várias threads quando o site está isolado (cabeçalhos COOP/COEP do vercel.json)
+    window.EJS_threads = !!window.crossOriginIsolated;
+    // Pula quadros automaticamente em aparelhos lentos em vez de deixar o jogo e o som lentos
+    window.EJS_defaultOptions = { pcsx_rearmed_frameskip_type: "auto" };
     // O gamepad virtual (direcional, botões e gatilhos) aparece sozinho em telas de toque.
     window.EJS_VirtualGamepadSettings = undefined;
     const biosUrl = bios || manifest.bios;
